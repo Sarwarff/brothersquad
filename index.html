@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>BROTHERSQUAD - Terminal</title>
+    <!-- Telegram Mini App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: radial-gradient(circle at 50% 0%, #1e1b4b 0%, #030014 100%);
+            --card: rgba(20, 15, 35, 0.7);
+            --text: #f8fafc; --muted: #94a3b8; --border: rgba(255, 255, 255, 0.08);
+            --accent: #8b5cf6; --accent-h: #7c3aed; --success: #10b981;
+        }
+        .light {
+            --bg: radial-gradient(circle at 50% 0%, #e0e7ff 0%, #f8fafc 100%);
+            --card: rgba(255, 255, 255, 0.8);
+            --text: #0f172a; --muted: #64748b; --border: rgba(0, 0, 0, 0.06);
+            --accent: #6366f1; --accent-h: #4f46e5;
+        }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Outfit',sans-serif; transition: background 0.3s, color 0.3s; }
+        body { min-height: 100vh; height: 100dvh; display:flex; justify-content:center; align-items:center; background:var(--bg); color:var(--text); overflow:hidden; }
+
+        /* TRADING INTRO */
+        #intro { position:fixed; inset:0; background:#030014; z-index:100; display:flex; flex-direction:column; align-items:center; justify-content:center; transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1); }
+        .chart-box { width: 160px; height: 70px; display: flex; align-items: flex-end; gap: 10px; margin-bottom: 25px; }
+        .bar { flex: 1; background: #8b5cf6; border-radius: 6px 6px 0 0; animation: bounce 1.4s infinite ease-in-out; box-shadow: 0 0 20px rgba(139,92,246,0.6); }
+        .bar:nth-child(2) { animation-delay: 0.25s; background: #00ffcc; box-shadow: 0 0 20px rgba(0,255,204,0.6); }
+        .bar:nth-child(3) { animation-delay: 0.5s; }
+        .bar:nth-child(4) { animation-delay: 0.75s; background: #00ffcc; box-shadow: 0 0 20px rgba(0,255,204,0.6); }
+        @keyframes bounce { 0%, 100% { height: 25px; } 50% { height: 75px; } }
+        .intro-title { font-size: 1.4rem; font-weight: 800; letter-spacing: 3px; color: #fff; text-shadow: 0 0 15px rgba(139,92,246,0.9); }
+
+        /* SCREENS & CARDS */
+        .screen { position: absolute; width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; opacity: 0; pointer-events: none; transition: opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1), transform 0.8s cubic-bezier(0.16, 1, 0.3, 1); transform: scale(0.96); padding: 15px; }
+        .screen.active { opacity: 1; pointer-events: auto; transform: scale(1); }
+
+        .box { width: 100%; max-width: 350px; padding: 30px 24px; background: var(--card); backdrop-filter: blur(25px); border: 1px solid var(--border); border-radius: 24px; box-shadow: 0 30px 60px rgba(0,0,0,0.4); }
+        .head { display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; }
+        .brand { display:flex; align-items:center; gap:10px; }
+        .logo { width: 28px; height: 28px; background: linear-gradient(135deg, var(--accent), #00ffcc); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 800; color: #fff; }
+        h2 { font-size:1.1rem; letter-spacing:0.5px; font-weight:700; }
+        .t-btn { background: rgba(125,125,125,0.1); border: 1px solid var(--border); width: 36px; height: 36px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        .t-btn svg { width: 16px; height: 16px; fill: var(--text); }
+
+        .group { margin-bottom:16px; }
+        label { display:block; font-size:11px; color:var(--muted); text-transform:uppercase; margin-bottom:6px; font-weight:700; }
+        input { width: 100%; padding: 12px 14px; background: rgba(125,125,125,0.05); border: 1px solid var(--border); border-radius: 12px; color: var(--text); outline: none; font-size: 0.95rem; font-weight: 600; }
+        input:focus { border-color: var(--accent); box-shadow: 0 0 15px rgba(139,92,246,0.25); }
+
+        .btn { width: 100%; padding: 13px; background: var(--accent); color: #fff; border: none; border-radius: 12px; font-weight: 700; cursor: pointer; margin-top: 6px; box-shadow: 0 8px 20px rgba(139,92,246,0.3); }
+        .btn:hover { background: var(--accent-h); }
+        .err { color: #ef4444; font-size: 11px; margin-top: 6px; display: none; font-weight: 700; }
+
+        /* SUCCESS CHECKMARK */
+        .success-box { text-align: center; }
+        .check-circle { width: 70px; height: 70px; background: rgba(16, 185, 129, 0.15); border: 2px solid var(--success); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 20px; box-shadow: 0 0 25px rgba(16, 185, 129, 0.4); animation: pop 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes pop { 0% { transform: scale(0); } 100% { transform: scale(1); } }
+        .check-circle svg { width: 35px; height: 35px; stroke: var(--success); stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+        /* DASHBOARD */
+        .dash { width: 100%; max-width: 500px; height: 85vh; background: var(--card); backdrop-filter: blur(25px); border: 1px solid var(--border); border-radius: 24px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 30px 60px rgba(0,0,0,0.4); }
+        .menu-bar { display: flex; gap: 8px; padding: 14px; border-bottom: 1px solid var(--border); background: rgba(0,0,0,0.1); overflow-x: auto; }
+        .menu-tab { padding: 8px 16px; background: rgba(125,125,125,0.05); border: 1px solid var(--border); border-radius: 10px; color: var(--muted); font-size: 0.85rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+        .menu-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); box-shadow: 0 4px 15px rgba(139,92,246,0.3); }
+        .dash-content { padding: 20px; flex: 1; overflow-y: auto; font-size: 0.95rem; color: var(--muted); }
+        .panel { display: none; }
+        .panel.active { display: block; animation: fadeInPanel 0.4s ease; }
+        @keyframes fadeInPanel { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+
+    <!-- INTRO -->
+    <div id="intro">
+        <div class="chart-box">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+        <div class="intro-title">BROTHERSQUAD</div>
+    </div>
+
+    <!-- SCREEN 1: LOGIN -->
+    <div class="screen active" id="sLogin">
+        <form class="box" id="f">
+            <div class="head">
+                <div class="brand">
+                    <div class="logo">BS</div>
+                    <h2>BROTHERSQUAD</h2>
+                </div>
+                <button type="button" class="t-btn" id="tBtn">
+                    <svg viewBox="0 0 24 24"><path d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                </button>
+            </div>
+            <div class="group"><label>Username</label><input type="text" id="user" required autocomplete="off" placeholder="Enter username"></div>
+            <div class="group"><label>Password (6 Digits)</label><input type="password" id="pass" maxlength="6" inputmode="numeric" required placeholder="••••••"><div class="err" id="eMsg">Invalid username or password.</div></div>
+            <button class="btn" type="submit">Access System</button>
+        </form>
+    </div>
+
+    <!-- SCREEN 2: SUCCESS CHECKMARK -->
+    <div class="screen" id="sSuccess">
+        <div class="box success-box">
+            <div class="check-circle"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            <h2 style="margin-bottom: 8px;">Access Successful</h2>
+            <p style="color: var(--muted); font-size: 0.9rem;">Welcome back, Saad.</p>
+        </div>
+    </div>
+
+    <!-- SCREEN 3: DASHBOARD MENU -->
+    <div class="screen" id="sDash">
+        <div class="dash">
+            <div class="menu-bar">
+                <div class="menu-tab active" onclick="switchTab('profits', this)">Profits</div>
+                <div class="menu-tab" onclick="switchTab('losses', this)">Losses</div>
+                <div class="menu-tab" onclick="switchTab('notes', this)">Notes</div>
+                <div class="menu-tab" onclick="switchTab('analysis', this)">Analysis</div>
+            </div>
+            <div class="dash-content">
+                <div class="panel active" id="p-profits"><h3 style="color:var(--text); margin-bottom:10px;">Profits Terminal</h3>Total verified group profit today: <span style="color:var(--success); font-weight:700;">+$1,420.00</span></div>
+                <div class="panel" id="p-losses"><h3 style="color:var(--text); margin-bottom:10px;">Losses Terminal</h3>Total group loss registered: <span style="color:#ef4444; font-weight:700;">-$210.00</span></div>
+                <div class="panel" id="p-notes"><h3 style="color:var(--text); margin-bottom:10px;">Brother Notes</h3>1. Watch out for EURUSD volatility at London Open.<br>2. Keep risk management strict.</div>
+                <div class="panel" id="p-analysis"><h3 style="color:var(--text); margin-bottom:10px;">Market Analysis</h3>Win rate for this week: <span style="color:var(--accent); font-weight:700;">84.5%</span> (Bullish structure).</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Telegram WebApp Setup
+        if (window.Telegram && window.Telegram.WebApp) {
+            window.Telegram.WebApp.ready();
+            window.Telegram.WebApp.expand(); // মোবাইল স্ক্রিন পুরোটা জুড়ে ওপেন করবে
+        }
+
+        // Intro Timing
+        setTimeout(() => {
+            const intro = document.getElementById('intro');
+            if(intro) {
+                intro.style.opacity = '0';
+                setTimeout(() => intro.remove(), 800);
+            }
+        }, 3000);
+
+        document.getElementById('tBtn').onclick = () => document.documentElement.classList.toggle('light');
+
+        // Login Check
+        document.getElementById('f').onsubmit = e => {
+            e.preventDefault();
+            const user = document.getElementById('user').value.trim();
+            const pass = document.getElementById('pass').value;
+            const eMsg = document.getElementById('eMsg');
+
+            if(user === "Saad" && pass === "123456") {
+                eMsg.style.display = 'none';
+                document.getElementById('sLogin').classList.remove('active');
+                document.getElementById('sSuccess').classList.add('active');
+
+                setTimeout(() => {
+                    document.getElementById('sSuccess').classList.remove('active');
+                    document.getElementById('sDash').classList.add('active');
+                }, 2200);
+            } else {
+                eMsg.style.display = 'block';
+            }
+        };
+
+        function switchTab(tabId, el) {
+            document.querySelectorAll('.menu-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            el.classList.add('active');
+            document.getElementById('p-' + tabId).classList.add('active');
+        }
+    </script>
+</body>
+  </html>

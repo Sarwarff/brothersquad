@@ -11,65 +11,94 @@
     <style>
         :root {
             --bg-pure: #03000a;
-            --card-bg: rgba(14, 10, 26, 0.85);
+            --card-bg: rgba(14, 10, 26, 0.88);
             --border-glow: rgba(139, 92, 246, 0.25);
             --accent-purple: #8b5cf6;
             --accent-cyan: #06b6d4;
             --success: #10b981;
             --danger: #ef4444;
+            --warning: #f59e0b;
             --text-main: #f8fafc;
             --text-muted: #64748b;
         }
 
         * { margin:0; padding:0; box-sizing:border-box; font-family:'Plus Jakarta Sans',sans-serif; -webkit-tap-highlight-color:transparent; }
-        body { background-color:var(--bg-pure); color:var(--text-main); min-height:100vh; min-height:100dvh; display:flex; justify-content:center; align-items:center; overflow-x:hidden; position:relative; }
+        body { background-color:var(--bg-pure); color:var(--text-main); min-height:100vh; min-height:100dvh; display:flex; justify-content:center; align-items:center; overflow-x:hidden; }
 
         /* ---------------------------------------------------- */
-        /* 1. INTRO: CREATURE + GLOWING BROTHERS SQUAD          */
+        /* 1. INTRO: CYBER LOADER + WORD-BY-WORD GLOW           */
         /* ---------------------------------------------------- */
         #intro {
             position: fixed; inset: 0; background: var(--bg-pure); z-index: 999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
-            transition: opacity 0.8s ease, visibility 0.8s;
+            transition: opacity 0.7s ease, visibility 0.7s;
         }
 
-        .creature-box {
-            width: 90px; height: 90px; margin-bottom: 20px;
+        /* Cyber Loading Core */
+        .loader-core {
+            position: relative; width: 70px; height: 70px; margin-bottom: 24px;
             display: flex; align-items: center; justify-content: center;
-            animation: creaturePulse 2.2s ease-in-out infinite alternate;
         }
 
-        .creature-svg {
-            width: 100%; height: 100%; fill: none;
-            stroke: url(#creatureGrad); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round;
-            filter: drop-shadow(0 0 16px rgba(139, 92, 246, 0.85));
+        .loader-ring {
+            position: absolute; inset: 0; border-radius: 50%;
+            border: 2px solid transparent; border-top-color: var(--accent-cyan);
+            border-bottom-color: var(--accent-purple);
+            animation: spinRing 1.2s cubic-bezier(0.68, -0.55, 0.27, 1.55) infinite;
+            filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.8));
         }
 
-        @keyframes creaturePulse {
-            0% { transform: scale(0.92); filter: drop-shadow(0 0 10px rgba(6, 182, 212, 0.6)); }
-            100% { transform: scale(1.08); filter: drop-shadow(0 0 26px rgba(168, 85, 247, 0.95)); }
+        .loader-dot {
+            width: 14px; height: 14px; background: #fff; border-radius: 50%;
+            box-shadow: 0 0 20px #fff, 0 0 35px var(--accent-purple);
+            animation: pulseDot 0.8s ease-in-out infinite alternate;
         }
 
-        .intro-title {
+        @keyframes spinRing { to { transform: rotate(360deg); } }
+        @keyframes pulseDot { 0% { transform: scale(0.7); opacity: 0.5; } 100% { transform: scale(1.2); opacity: 1; } }
+
+        /* Sequential Glowing Words */
+        .intro-title-wrap {
             font-family: 'Orbitron', sans-serif; font-style: italic; font-weight: 900;
-            font-size: clamp(1.8rem, 6.5vw, 2.7rem); letter-spacing: 4px; text-transform: uppercase;
-            background: linear-gradient(135deg, #ffffff 10%, #c084fc 60%, #06b6d4 100%);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            filter: drop-shadow(0 0 25px rgba(168, 85, 247, 0.6));
-            animation: fadeInText 1.5s ease-out forwards;
+            font-size: clamp(1.8rem, 6.5vw, 2.6rem); letter-spacing: 4px; text-transform: uppercase;
+            display: flex; gap: 12px;
         }
 
-        @keyframes fadeInText {
-            0% { opacity: 0; transform: translateY(12px) scale(0.95); }
-            100% { opacity: 1; transform: translateY(0) scale(1); }
+        .word {
+            opacity: 0; transform: translateY(15px) scale(0.9);
+            filter: blur(8px); transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .word-brothers {
+            background: linear-gradient(135deg, #ffffff, #c084fc);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .word-squad {
+            background: linear-gradient(135deg, #38bdf8, #06b6d4);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
+
+        .word.revealed {
+            opacity: 1; transform: translateY(0) scale(1); filter: blur(0);
+            text-shadow: 0 0 25px rgba(168, 85, 247, 0.8);
+        }
+
+        .full-pulse {
+            animation: titlePulse 1.2s ease-in-out infinite alternate;
+        }
+
+        @keyframes titlePulse {
+            0% { filter: drop-shadow(0 0 15px rgba(139, 92, 246, 0.5)); }
+            100% { filter: drop-shadow(0 0 30px rgba(6, 182, 212, 0.9)); }
         }
 
         /* ---------------------------------------------------- */
-        /* SCREEN SYSTEM                                        */
+        /* SCREEN WRAPPER                                       */
         /* ---------------------------------------------------- */
         .screen {
             display: none; width: 100%; max-width: 440px; padding: 16px;
-            animation: screenFade 0.45s ease forwards;
+            animation: screenFade 0.4s ease forwards;
         }
         .screen.active { display: block; }
         @keyframes screenFade { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: scale(1); } }
@@ -79,9 +108,8 @@
         /* ---------------------------------------------------- */
         .login-card {
             background: var(--card-bg); backdrop-filter: blur(25px);
-            border: 1.5px solid var(--border-glow); border-radius: 26px; padding: 32px 24px;
-            box-shadow: 0 25px 60px rgba(0,0,0,0.8), 0 0 35px rgba(139, 92, 246, 0.15);
-            text-align: center;
+            border: 1.5px solid var(--border-glow); border-radius: 26px; padding: 32px 22px;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.85); text-align: center;
         }
 
         .badge {
@@ -128,7 +156,7 @@
         .btn:active { transform: scale(0.98); }
 
         /* ---------------------------------------------------- */
-        /* 3. CLEAN GLOWING CHECKMARK ONLY                      */
+        /* 3. GLOWING CHECKMARK ONLY                            */
         /* ---------------------------------------------------- */
         .check-wrapper { text-align: center; padding: 40px 0; }
         .glowing-check-box {
@@ -138,100 +166,107 @@
             box-shadow: 0 0 35px rgba(16, 185, 129, 0.6); animation: checkPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
-        @keyframes checkPop {
-            0% { transform: scale(0.3); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .check-svg {
-            width: 48px; height: 48px; stroke: var(--success); stroke-width: 3.5; fill: none;
-            stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.9));
-        }
+        @keyframes checkPop { 0% { transform: scale(0.3); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .check-svg { width: 48px; height: 48px; stroke: var(--success); stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 12px rgba(16, 185, 129, 0.9)); }
 
         /* ---------------------------------------------------- */
-        /* 4. TRADING DASHBOARD (DEMO)                          */
+        /* 4. EXPANDED TRADING DASHBOARD                        */
         /* ---------------------------------------------------- */
         .dash-container {
-            width: 100%; max-width: 520px; background: var(--card-bg); backdrop-filter: blur(25px);
+            width: 100%; max-width: 500px; background: var(--card-bg); backdrop-filter: blur(25px);
             border: 1px solid var(--border-glow); border-radius: 26px; overflow: hidden;
             box-shadow: 0 30px 60px rgba(0,0,0,0.85); display: flex; flex-direction: column;
         }
 
         .dash-header {
             display: flex; align-items: center; justify-content: space-between;
-            padding: 18px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: rgba(0,0,0,0.2);
+            padding: 16px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: rgba(0,0,0,0.25);
         }
 
         .user-pill { display: flex; align-items: center; gap: 9px; }
-        .avatar { width: 34px; height: 34px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6, #06b6d4); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; }
+        .avatar { width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #8b5cf6, #06b6d4); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px; }
         .user-meta { font-size: 12px; font-weight: 700; }
-        .user-status { font-size: 10px; color: var(--success); display: flex; align-items: center; gap: 4px; }
-        .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); }
+        .user-status { font-size: 10.5px; color: var(--success); display: flex; align-items: center; gap: 4px; }
+        .live-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--success); box-shadow: 0 0 6px var(--success); animation: pulseDot 1s infinite alternate; }
+
+        /* Live Market Ticker */
+        .ticker-bar {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(6, 182, 212, 0.08); border-bottom: 1px solid rgba(6, 182, 212, 0.15);
+            padding: 8px 16px; font-size: 11px; font-weight: 700;
+        }
+        .ticker-price { color: #38bdf8; text-shadow: 0 0 10px rgba(56, 189, 248, 0.5); }
 
         /* Stats Grid */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 16px; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; padding: 14px 16px; }
         .stat-card {
             background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 16px; padding: 14px;
+            border-radius: 14px; padding: 12px 14px;
         }
-        .stat-label { font-size: 10.5px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 4px; }
+        .stat-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; margin-bottom: 3px; }
         .stat-val { font-size: 1.25rem; font-weight: 800; }
         .val-profit { color: var(--success); text-shadow: 0 0 12px rgba(16, 185, 129, 0.4); }
         .val-win { color: var(--accent-cyan); text-shadow: 0 0 12px rgba(6, 182, 212, 0.4); }
 
         /* Menu Tabs */
-        .dash-menu { display: flex; gap: 8px; padding: 0 16px 12px; overflow-x: auto; scrollbar-width: none; }
+        .dash-menu { display: flex; gap: 6px; padding: 0 16px 12px; overflow-x: auto; scrollbar-width: none; }
         .tab-btn {
-            padding: 9px 16px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 11px; color: var(--text-muted); font-size: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: 0.2s;
+            padding: 8px 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px; color: var(--text-muted); font-size: 11.5px; font-weight: 700; cursor: pointer; white-space: nowrap; transition: 0.2s;
         }
         .tab-btn.active { background: var(--accent-purple); color: #fff; border-color: var(--accent-purple); box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4); }
 
-        /* Tab Content */
+        /* Tab Body */
         .dash-body { padding: 0 16px 20px; flex: 1; max-height: 380px; overflow-y: auto; }
         .panel { display: none; animation: fadeInPanel 0.3s ease; }
         .panel.active { display: block; }
         @keyframes fadeInPanel { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
 
-        /* Signal Items */
+        /* Signal Cards */
         .signal-card {
             background: rgba(255, 255, 255, 0.03); border: 1px solid rgba(255, 255, 255, 0.07);
-            border-radius: 14px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;
+            border-radius: 14px; padding: 13px; margin-bottom: 10px;
         }
+        .signal-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
         .signal-pair { font-size: 13px; font-weight: 800; }
-        .signal-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
-        .badge-buy { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid var(--success); font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 8px; }
-        .badge-sell { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); font-size: 10px; font-weight: 800; padding: 4px 10px; border-radius: 8px; }
+        .signal-meta { font-size: 11px; color: var(--text-muted); line-height: 1.4; }
+        .badge-buy { background: rgba(16, 185, 129, 0.15); color: var(--success); border: 1px solid var(--success); font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; }
+        .badge-sell { background: rgba(239, 68, 68, 0.15); color: var(--danger); border: 1px solid var(--danger); font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px; }
+        
+        .copy-btn {
+            background: rgba(139, 92, 246, 0.15); border: 1px solid rgba(139, 92, 246, 0.4);
+            color: #c4b5fd; font-size: 10.5px; font-weight: 700; padding: 5px 10px; border-radius: 8px;
+            cursor: pointer; margin-top: 8px; width: 100%; transition: 0.2s;
+        }
+        .copy-btn:active { background: var(--accent-purple); color: #fff; }
 
-        /* Notes Style */
-        .note-box {
-            background: rgba(139, 92, 246, 0.06); border-left: 3px solid var(--accent-purple);
-            padding: 12px 14px; border-radius: 0 12px 12px 0; margin-bottom: 10px; font-size: 12.5px; line-height: 1.5;
+        /* Calculator View */
+        .calc-box {
+            background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px; padding: 14px; margin-bottom: 10px;
+        }
+        .calc-field { width: 100%; padding: 10px 12px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 10px; color: #fff; font-size: 12px; font-weight: 600; outline: none; margin-bottom: 8px; }
+
+        /* Leaderboard Items */
+        .leader-item {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(255, 255, 255, 0.025); border: 1px solid rgba(255, 255, 255, 0.06);
+            padding: 10px 14px; border-radius: 12px; margin-bottom: 8px; font-size: 12.5px;
         }
     </style>
 </head>
 <body>
 
-    <!-- 1. INTRO WITH CREATURE + GLOWING TITLE -->
+    <!-- 1. INTRO: LOADER + WORD-BY-WORD GLOW -->
     <div id="intro">
-        <div class="creature-box">
-            <!-- Cyber Creature SVG Icon -->
-            <svg class="creature-svg" viewBox="0 0 64 64">
-                <defs>
-                    <linearGradient id="creatureGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                        <stop offset="0%" stop-color="#06b6d4" />
-                        <stop offset="50%" stop-color="#a855f7" />
-                        <stop offset="100%" stop-color="#ec4899" />
-                    </linearGradient>
-                </defs>
-                <!-- Stylized Creature Head / Cyber Emblem -->
-                <path d="M32 4 L44 18 L58 22 L48 34 L52 50 L32 42 L12 50 L16 34 L6 22 L20 18 Z" />
-                <circle cx="26" cy="24" r="2.5" fill="#00ffff" />
-                <circle cx="38" cy="24" r="2.5" fill="#00ffff" />
-                <path d="M28 34 Q32 38 36 34" stroke="#fff" stroke-width="2" />
-            </svg>
+        <div class="loader-core">
+            <div class="loader-ring"></div>
+            <div class="loader-dot"></div>
         </div>
-        <h1 class="intro-title">Brothers Squad</h1>
+        <div class="intro-title-wrap" id="introTitle">
+            <span class="word word-brothers" id="wBrothers">Brothers</span>
+            <span class="word word-squad" id="wSquad">Squad</span>
+        </div>
     </div>
 
     <!-- 2. LOGIN SCREEN -->
@@ -255,14 +290,14 @@
                     <input type="text" class="pin" maxlength="1" inputmode="numeric">
                     <input type="text" class="pin" maxlength="1" inputmode="numeric">
                 </div>
-                <div class="err" id="errMsg">Invalid username or password.</div>
+                <div class="err" id="errMsg">Invalid credentials.</div>
             </div>
 
             <button class="btn" id="btnAccess">Access Terminal</button>
         </div>
     </div>
 
-    <!-- 3. GLOWING CHECKMARK SCREEN (NO EXTRA LOOPS) -->
+    <!-- 3. GLOWING CHECKMARK -->
     <div class="screen" id="screenSuccess">
         <div class="login-card check-wrapper">
             <div class="glowing-check-box">
@@ -275,85 +310,106 @@
         </div>
     </div>
 
-    <!-- 4. TRADING DASHBOARD INTERFACE (DEMO) -->
-    <div class="screen" id="screenDash" style="max-width:520px;">
+    <!-- 4. ADVANCED TRADING TERMINAL DASHBOARD -->
+    <div class="screen" id="screenDash" style="max-width:500px;">
         <div class="dash-container">
             <!-- Header -->
             <div class="dash-header">
                 <div class="user-pill">
                     <div class="avatar">BS</div>
                     <div>
-                        <div class="user-meta">Saad (Brother Squad)</div>
+                        <div class="user-meta">Saad (Lead Trader)</div>
                         <div class="user-status"><span class="live-dot"></span> Terminal Active</div>
                     </div>
                 </div>
-                <button onclick="location.reload()" style="background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); color:#f87171; padding:6px 12px; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer;">Logout</button>
+                <button onclick="location.reload()" style="background:rgba(239,68,68,0.12); border:1px solid rgba(239,68,68,0.3); color:#f87171; padding:5px 10px; border-radius:8px; font-size:11px; font-weight:700; cursor:pointer;">Exit</button>
+            </div>
+
+            <!-- Real-time Live Price Ticker -->
+            <div class="ticker-bar">
+                <span>⚡ XAU/USD (Gold): <b class="ticker-price" id="goldPrice">2,394.50</b></span>
+                <span>BTC: <b style="color:var(--success);" id="btcPrice">$64,280</b></span>
             </div>
 
             <!-- Stats Grid -->
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-label">Verified Profit Today</div>
-                    <div class="stat-val val-profit">+$2,480.50</div>
+                    <div class="stat-label">Verified Squad Profit</div>
+                    <div class="stat-val val-profit">+$3,850.00</div>
                 </div>
                 <div class="stat-card">
                     <div class="stat-label">Win Rate (Weekly)</div>
-                    <div class="stat-val val-win">87.5%</div>
+                    <div class="stat-val val-win">89.4%</div>
                 </div>
             </div>
 
             <!-- Menu Tabs -->
             <div class="dash-menu">
-                <button class="tab-btn active" onclick="switchDashTab('signals', this)">⚡ Market Signals</button>
-                <button class="tab-btn" onclick="switchDashTab('notes', this)">📜 Brother Rules</button>
-                <button class="tab-btn" onclick="switchDashTab('analysis', this)">📊 Market Status</button>
+                <button class="tab-btn active" onclick="switchDashTab('signals', this)">⚡ Signals</button>
+                <button class="tab-btn" onclick="switchDashTab('calc', this)">🧮 Calculator</button>
+                <button class="tab-btn" onclick="switchDashTab('leaders', this)">🏆 Leaderboard</button>
+                <button class="tab-btn" onclick="switchDashTab('rules', this)">📜 Rules</button>
             </div>
 
-            <!-- Tab Content -->
+            <!-- Tab Contents -->
             <div class="dash-body">
-                <!-- Panel 1: Live Signals -->
+                <!-- Panel 1: VIP Signals -->
                 <div class="panel active" id="p-signals">
                     <div class="signal-card">
-                        <div>
-                            <div class="signal-pair">XAU/USD (Gold)</div>
-                            <div class="signal-meta">Entry: 2382.40 | TP: 2395.00 | SL: 2374.00</div>
+                        <div class="signal-top">
+                            <div class="signal-pair">XAU/USD (Gold Scalp)</div>
+                            <span class="badge-buy">BUY NOW</span>
                         </div>
-                        <span class="badge-buy">BUY ACTIVE</span>
+                        <div class="signal-meta">Entry: 2392.00 | TP1: 2398.00 | TP2: 2405.00 | SL: 2386.00</div>
+                        <button class="copy-btn" onclick="copySignal('XAU/USD BUY 2392.00 | TP: 2398.00 | SL: 2386.00')">📋 Copy Setup</button>
                     </div>
+
                     <div class="signal-card">
-                        <div>
-                            <div class="signal-pair">EUR/USD</div>
-                            <div class="signal-meta">Entry: 1.0875 | TP: 1.0820 | SL: 1.0910</div>
+                        <div class="signal-top">
+                            <div class="signal-pair">EUR/USD (London Open)</div>
+                            <span class="badge-sell">SELL ACTIVE</span>
                         </div>
-                        <span class="badge-sell">SELL ACTIVE</span>
-                    </div>
-                    <div class="signal-card">
-                        <div>
-                            <div class="signal-pair">BTC/USDT</div>
-                            <div class="signal-meta">Breakout retest on 4H chart confirmed</div>
-                        </div>
-                        <span class="badge-buy">BULLISH</span>
+                        <div class="signal-meta">Entry: 1.0880 | TP: 1.0815 | SL: 1.0915</div>
+                        <button class="copy-btn" onclick="copySignal('EUR/USD SELL 1.0880 | TP: 1.0815 | SL: 1.0915')">📋 Copy Setup</button>
                     </div>
                 </div>
 
-                <!-- Panel 2: Strategy Notes -->
-                <div class="panel" id="p-notes">
-                    <div class="note-box">
-                        <b>1. Capital Protection:</b> Never risk more than 1.5% of your total account on any single trade.
-                    </div>
-                    <div class="note-box">
-                        <b>2. London & NY Session:</b> Look for high-liquidity setups only during session open volume.
-                    </div>
-                    <div class="note-box">
-                        <b>3. Discipline Rule:</b> If 2 consecutive stop-losses hit, stop trading for the day.
+                <!-- Panel 2: Risk Calculator -->
+                <div class="panel" id="p-calc">
+                    <div class="calc-box">
+                        <label style="font-size:10.5px; font-weight:700; color:var(--text-muted);">ACCOUNT BALANCE ($)</label>
+                        <input type="number" id="calcBal" class="calc-field" value="1000" oninput="calculateRisk()">
+                        <label style="font-size:10.5px; font-weight:700; color:var(--text-muted);">RISK PERCENTAGE (%)</label>
+                        <input type="number" id="calcRisk" class="calc-field" value="2" oninput="calculateRisk()">
+                        <div style="font-size:12.5px; font-weight:700; color:var(--accent-cyan); margin-top:4px;">
+                            Max Dollar Risk: <span id="riskResult" style="color:#fff;">$20.00</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Panel 3: Analysis -->
-                <div class="panel" id="p-analysis">
-                    <div style="font-size:13px; line-height:1.6; color:#94a3b8;">
-                        <p style="margin-bottom:8px;">📈 <b>Structure Analysis:</b> DXY (Dollar Index) showing rejection at resistance. Bullish continuation expected on Gold and Crypto assets.</p>
-                        <p>🎯 <b>Next High-Impact News:</b> US CPI Data release at 6:30 PM.</p>
+                <!-- Panel 3: Squad Leaderboard -->
+                <div class="panel" id="p-leaders">
+                    <div class="leader-item">
+                        <span>🥇 <b>Saad</b> (Lead Trader)</span>
+                        <span style="color:var(--success); font-weight:800;">+$4,210 (94%)</span>
+                    </div>
+                    <div class="leader-item">
+                        <span>🥈 <b>Omar</b></span>
+                        <span style="color:var(--success); font-weight:800;">+$2,150 (88%)</span>
+                    </div>
+                    <div class="leader-item">
+                        <span>🥉 <b>Ryan</b></span>
+                        <span style="color:var(--success); font-weight:800;">+$1,480 (82%)</span>
+                    </div>
+                </div>
+
+                <!-- Panel 4: Rules -->
+                <div class="panel" id="p-rules">
+                    <div style="background:rgba(139,92,246,0.06); border-left:3px solid var(--accent-purple); padding:10px 12px; border-radius:0 10px 10px 0; margin-bottom:8px; font-size:12px; line-height:1.5;">
+                        <b>1. Capital Rule:</b> Never risk more than 2% per setup.
+                    </div>
+                    <div style="background:rgba(139,92,246,0.06); border-left:3px solid var(--accent-purple); padding:10px 12px; border-radius:0 10px 10px 0; margin-bottom:8px; font-size:12px; line-height:1.5;">
+                        <b>2. Stop Loss:</b> Always use hard stop-loss. No exceptions.
                     </div>
                 </div>
             </div>
@@ -367,14 +423,20 @@
             window.Telegram.WebApp.expand();
         }
 
-        // 2. Intro Creature Timing (2.2s)
-        setTimeout(() => {
-            const intro = document.getElementById('intro');
-            intro.style.opacity = '0';
-            setTimeout(() => intro.remove(), 700);
-        }, 2200);
+        // 2. Sequential Word-by-Word Glowing Intro Timeline
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => document.getElementById('wBrothers').classList.add('revealed'), 600);
+            setTimeout(() => document.getElementById('wSquad').classList.add('revealed'), 1300);
+            setTimeout(() => document.getElementById('introTitle').classList.add('full-pulse'), 1900);
 
-        // 3. PIN Auto-Focus & Dot Masking
+            setTimeout(() => {
+                const intro = document.getElementById('intro');
+                intro.style.opacity = '0';
+                setTimeout(() => intro.remove(), 700);
+            }, 3000);
+        });
+
+        // 3. 6-Digit PIN Handling
         const pins = document.querySelectorAll('.pin');
         const pinVals = Array(6).fill('');
 
@@ -397,25 +459,25 @@
             };
         });
 
-        // 4. Access Authentication & Smooth Dashboard Switch
+        // 4. Access Authentication (Saad / 123456)
         document.getElementById('btnAccess').onclick = () => {
             const u = document.getElementById('user').value.trim();
             const p = pinVals.join('');
             const err = document.getElementById('errMsg');
 
-            // Credentials: Username "Saad", Password "123456"
             if (u.toLowerCase() === 'saad' && p === '123456') {
                 err.style.display = 'none';
-                
-                // Switch to Glowing Checkmark
+
+                // Glowing Checkmark
                 document.getElementById('screenLogin').classList.remove('active');
                 document.getElementById('screenSuccess').classList.add('active');
 
-                // After 1.6s of glowing checkmark, load Trading Dashboard
+                // Reveal Dashboard
                 setTimeout(() => {
                     document.getElementById('screenSuccess').classList.remove('active');
                     document.getElementById('screenDash').classList.add('active');
-                }, 1600);
+                    startLiveTicker();
+                }, 1500);
 
             } else {
                 err.innerText = p.length < 6 ? 'Please enter all 6 digits.' : 'Invalid username or password.';
@@ -423,12 +485,34 @@
             }
         };
 
-        // 5. Dashboard Tab Switcher
+        // 5. Dashboard Functions
         function switchDashTab(tabId, btn) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
             document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
             btn.classList.add('active');
             document.getElementById('p-' + tabId).classList.add('active');
+        }
+
+        function calculateRisk() {
+            const bal = parseFloat(document.getElementById('calcBal').value) || 0;
+            const risk = parseFloat(document.getElementById('calcRisk').value) || 0;
+            document.getElementById('riskResult').innerText = '$' + ((bal * risk) / 100).toFixed(2);
+        }
+
+        function copySignal(text) {
+            navigator.clipboard.writeText(text);
+            if (window.Telegram?.WebApp?.HapticFeedback) {
+                window.Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+            }
+            alert('Copied to clipboard: ' + text);
+        }
+
+        // Live Market Price Simulation
+        function startLiveTicker() {
+            setInterval(() => {
+                const gold = (2394 + (Math.random() * 2 - 1)).toFixed(2);
+                document.getElementById('goldPrice').innerText = gold;
+            }, 2500);
         }
     </script>
 </body>
